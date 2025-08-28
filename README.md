@@ -30,7 +30,7 @@ export GS_PASSWORD="your_password"
 export GS_COURSE_URL="https://www.gradescope.com/courses/123456"
 ```
 
-### Readable Json Format
+### 4\. Readable Json Format
 
 This file should contain a JSON list of assignment objects.
 
@@ -38,7 +38,7 @@ This file should contain a JSON list of assignment objects.
   - **Optional:** `late_due_date`, `enforce_time_limit`, `time_limit`, `group_submission`, `group_size`, `anonymous_grading`, etc.
   - **Date Format:** `'YYYY-MM-DD HH:MM'` (24-hour clock).
 
-### Example `assignments.json`
+**Example `assignments.json`**
 
 ```json
 [
