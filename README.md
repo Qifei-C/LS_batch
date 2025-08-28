@@ -74,7 +74,7 @@ This file should contain a JSON list of assignment objects.
 Run the script with your `assignments.json` file in the same directory:
 
 ```bash
-python your_script_name.py
+python LS_batch_creator.py
 ```
 
 **Disclaimer:** This tool relies on web scraping. If Gradescope's website structure changes, the script may need updates. Use at your own risk.
