@@ -237,7 +237,6 @@ class GSOnlineCreator:
                 assignment_id = parts[1].split('/')[0]
                 rubric_url = f"{self.course_url}/assignments/{assignment_id}/rubric/edit"
                 
-                logger.info(f"Navigating to rubric page: {rubric_url}")
                 self.driver.get(rubric_url)
                 time.sleep(3)
                 
@@ -248,9 +247,7 @@ class GSOnlineCreator:
                         "points": points
                     })
                 
-                for i, item in enumerate(rubric_items):
-                    logger.info(f"Setting rubric item {i+1}: {item['description']} = {item['points']}")
-                    
+                for i, item in enumerate(rubric_items):                  
                     if i == 0:
                         try:
                             p_elements = self.driver.find_elements(By.TAG_NAME, "p")
@@ -339,8 +336,6 @@ class GSOnlineCreator:
                             logger.warning(f"Error adding rubric item {i+1}: {e}")
                     
                     time.sleep(1)
-                
-                logger.info("Rubric setup complete")
                 
         except Exception as e:
             logger.warning(f"Rubric setup issue: {e}")
@@ -467,3 +462,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
