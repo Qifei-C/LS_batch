@@ -1,4 +1,4 @@
-# Gradescope Batch Lecture Summary Creator
+# Batch Lecture Summary Creator
 
 ### 1\. Prerequisites
 
