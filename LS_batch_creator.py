@@ -7,7 +7,7 @@ import json
 import time
 import logging
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 from getpass import getpass
 from datetime import datetime
 
@@ -20,7 +20,7 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import TimeoutException
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -37,6 +37,7 @@ class OnlineAssignment:
     time_limit: Optional[int] = None
     group_size: Optional[int] = None
     question_text: Optional[str] = None
+    rubric: Optional[Dict[str, float]] = None
 
 
 class GSOnlineCreator:
@@ -227,6 +228,123 @@ class GSOnlineCreator:
         except Exception as e:
             logger.warning(f"Outline page filling issue: {e}")
 
+    def _setup_rubric(self, rubric_data: Dict[str, float]):
+        try:
+            current_url = self.driver.current_url
+            
+            if '/assignments/' in current_url:
+                parts = current_url.split('/assignments/')
+                assignment_id = parts[1].split('/')[0]
+                rubric_url = f"{self.course_url}/assignments/{assignment_id}/rubric/edit"
+                
+                logger.info(f"Navigating to rubric page: {rubric_url}")
+                self.driver.get(rubric_url)
+                time.sleep(3)
+                
+                rubric_items = []
+                for description, points in rubric_data.items():
+                    rubric_items.append({
+                        "description": description.capitalize(),
+                        "points": points
+                    })
+                
+                for i, item in enumerate(rubric_items):
+                    logger.info(f"Setting rubric item {i+1}: {item['description']} = {item['points']}")
+                    
+                    if i == 0:
+                        try:
+                            p_elements = self.driver.find_elements(By.TAG_NAME, "p")
+                            for p in p_elements:
+                                if p.text.strip() == "Correct":
+                                    pyperclip.copy(item['description'])
+                                    p.click()
+                                    time.sleep(0.5)
+                                    
+                                    active = self.driver.switch_to.active_element
+                                    active.send_keys(Keys.CONTROL + "a")
+                                    active.send_keys(Keys.CONTROL + "v")
+                                    active.send_keys(Keys.TAB)
+                                    time.sleep(0.5)
+                                    break
+                            
+                            pyperclip.copy(str(item['points']))
+                            points_btn = self.driver.find_element(By.CSS_SELECTOR, ".rubricField-points")
+                            points_btn.click()
+                            time.sleep(0.5)
+                            
+                            active = self.driver.switch_to.active_element
+                            active.send_keys(Keys.CONTROL + "a")
+                            active.send_keys(Keys.CONTROL + "v")
+                            active.send_keys(Keys.TAB)
+                            time.sleep(0.5)
+                            
+                        except Exception as e:
+                            logger.warning(f"Error updating first rubric item: {e}")
+                    
+                    else:
+                        # Add new rubric item
+                        try:
+                            # Find and click Add Rubric Item button
+                            buttons = self.driver.find_elements(By.TAG_NAME, "button")
+                            for btn in buttons:
+                                aria_label = btn.get_attribute('aria-label') or ''
+                                btn_text = btn.text or ''
+                                if 'Add Rubric Item' in aria_label or 'Add Rubric Item' in btn_text:
+                                    btn.click()
+                                    break
+                            
+                            time.sleep(2)
+                            
+                            rubric_items_elements = self.driver.find_elements(By.CLASS_NAME, "rubricItem")
+                            if rubric_items_elements and len(rubric_items_elements) > i:
+                                last_item = rubric_items_elements[-1]
+                                
+                                p_elements = last_item.find_elements(By.TAG_NAME, "p")
+                                clicked = False
+                                for p in p_elements:
+                                    text = p.text.strip()
+                                    if text in ["Correct", "Incorrect", ""] or len(text) < 20:
+                                        pyperclip.copy(item['description'])
+                                        p.click()
+                                        clicked = True
+                                        break
+                                
+                                if not clicked and p_elements:
+                                    pyperclip.copy(item['description'])
+                                    p_elements[0].click()
+                                
+                                time.sleep(0.5)
+                                active = self.driver.switch_to.active_element
+                                active.send_keys(Keys.CONTROL + "a")
+                                active.send_keys(Keys.CONTROL + "v")
+                                active.send_keys(Keys.TAB)
+                                time.sleep(0.5)
+                                
+                                rubric_items_elements = self.driver.find_elements(By.CLASS_NAME, "rubricItem")
+                                if rubric_items_elements and len(rubric_items_elements) > i:
+                                    last_item = rubric_items_elements[-1]
+                                    points_btns = last_item.find_elements(By.CSS_SELECTOR, ".rubricField-points")
+                                    if points_btns:
+                                        pyperclip.copy(str(item['points']))
+                                        points_btns[0].click()
+                                        time.sleep(0.5)
+                                        
+                                        active = self.driver.switch_to.active_element
+                                        active.send_keys(Keys.CONTROL + "a")
+                                        active.send_keys(Keys.CONTROL + "v")
+                                        active.send_keys(Keys.TAB)
+                                        time.sleep(0.5)
+                                    
+                        except Exception as e:
+                            logger.warning(f"Error adding rubric item {i+1}: {e}")
+                    
+                    time.sleep(1)
+                
+                logger.info("Rubric setup complete")
+                
+        except Exception as e:
+            logger.warning(f"Rubric setup issue: {e}")
+
     def create(self, a: OnlineAssignment) -> bool:
         d, S = self.driver, self.SELECTORS
         
@@ -257,6 +375,10 @@ class GSOnlineCreator:
             time.sleep(3)
             
             self._fill_outline_page(a)
+            
+            if a.rubric:
+                logger.info("Setting up rubric...")
+                self._setup_rubric(a.rubric)
             
             self.goto_assignments()
             logger.info(f"Created: {a.name}")
@@ -303,7 +425,8 @@ class GSOnlineCreator:
                 enforce_time_limit=item.get('enforce_time_limit'),
                 time_limit=item.get('time_limit'),
                 group_size=item.get('group_size'),
-                question_text=details.get('question')
+                question_text=details.get('question'),
+                rubric=details.get('rubric')
             ))
         
         logger.info(f"Loaded {len(assignments)} assignments from {path}")
@@ -343,6 +466,4 @@ def main():
         bot.stop()
 
 if __name__ == '__main__':
-
     main()
-
