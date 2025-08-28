@@ -20,7 +20,7 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import TimeoutException
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s')
 logger = logging.getLogger(__name__)
 
 
@@ -343,4 +343,5 @@ def main():
         bot.stop()
 
 if __name__ == '__main__':
+
     main()
