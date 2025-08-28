@@ -16,11 +16,11 @@ pip install selenium pyperclip
 
 ### 3\. Configuration
 
-**A. Create `assignments.json`**
+**Create `assignments.json`**
 
 Create a file named `assignments.json` to define your assignments. See the format below.
 
-**B. Set Credentials**
+**(Optional) Set Credentials**
 
 For convenience, set the following environment variables. If they are not set, the script will prompt you for input.
 
@@ -30,7 +30,7 @@ export GS_PASSWORD="your_password"
 export GS_COURSE_URL="https://www.gradescope.com/courses/123456"
 ```
 
-## `assignments.json` Format
+### `assignments.json` Format
 
 This file should contain a JSON list of assignment objects.
 
@@ -69,7 +69,7 @@ This file should contain a JSON list of assignment objects.
 ]
 ```
 
-## Usage
+### Usage
 
 Run the script with your `assignments.json` file in the same directory:
 
