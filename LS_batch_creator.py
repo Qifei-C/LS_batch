@@ -314,7 +314,7 @@ def main():
     email = os.getenv("GS_EMAIL") or input("GS email: ").strip()
     password = os.getenv("GS_PASSWORD") or getpass("GS password: ")
     course_url = os.getenv("GS_COURSE_URL") or input("Course URL (e.g., https://www.gradescope.com/courses/xxxxxx): ").strip()
-    json_file = os.getenv("GS_JSON") or "test-assignments-json.json"
+    json_file = os.getenv("GS_JSON") or input("JSON file name: ")
     
     bot = GSOnlineCreator(email, password, course_url, headless=False)
     
@@ -345,3 +345,4 @@ def main():
 if __name__ == '__main__':
 
     main()
+
