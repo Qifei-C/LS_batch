@@ -30,7 +30,7 @@ export GS_PASSWORD="your_password"
 export GS_COURSE_URL="https://www.gradescope.com/courses/123456"
 ```
 
-## 📄 `assignments.json` Format
+## `assignments.json` Format
 
 This file should contain a JSON list of assignment objects.
 
